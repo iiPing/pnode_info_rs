@@ -2,7 +2,7 @@
 
 PROJECT_NAME=pnode_info_rs
 
-GH_TAG=v0.1-rc2
+GH_TAG=v0.1-rc3
 
 TGT_X64="x86_64-unknown-linux-gnu"
 TGT_A64="aarch64-unknown-linux-gnu"
