@@ -2,7 +2,7 @@
 FROM rust:1.68.2-bullseye AS builder
 ARG VERSION
 
-RUN apt update && apt -y install git curl
+RUN apt update && apt -y install git curl perl
 
 WORKDIR /usr/src/local
 RUN git clone https://github.com/iiPing/pnode_info_rs.git \
@@ -10,7 +10,7 @@ RUN git clone https://github.com/iiPing/pnode_info_rs.git \
  && git fetch \
  && git fetch --tags \
  && git checkout $VERSION \
- && ./build bin-release --out-dir=/usr/src/local/pnode_info_rs/distbin
+ && ./build bin-release --output-dir=/usr/src/local/pnode_info_rs/distbin
 
 
 # https://github.com/GoogleContainerTools/distroless

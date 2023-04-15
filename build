@@ -19,7 +19,6 @@ EOF
 }
 
 function BinRelease {
-    set -x
     local param=$1
     local outdir=$(echo $param | perl -ne 'print $1 if /--output-dir=(\S+)/')
     if [[ -n $outdir && -d "$outdir" ]]; then
