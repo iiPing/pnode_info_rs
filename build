@@ -29,8 +29,8 @@ function BinRelease {
     if [[ -n $outdir && -d "$outdir" ]]; then
       
       #https://github.com/rust-lang/rust/issues/78210
-      check_add_x86flag="$(uname -a | perl -ne 'print "--target $TGT_X64" if /x86_64/')"
-      check_add_aarch64flag="$(uname -a | perl -ne 'print "--target $TGT_A64" if /aarch64/' )"
+      check_add_x86flag="$(uname -a | perl -ne 'print "--target x86_64-unknown-linux-gnu" if /x86_64/')"
+      check_add_aarch64flag="$(uname -a | perl -ne 'print "--target aarch64-unknown-linux-gnu" if /aarch64/' )"
 
       RUSTFLAGS="-C target-feature=+crt-static" \
             CARGO_BUILD_TARGET_DIR=$outdir cargo build --release $check_add_x86flag $check_add_aarch64flag
