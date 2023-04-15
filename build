@@ -25,7 +25,7 @@ function BinRelease {
       RUSTFLAGS="-C target-feature=+crt-static" \
             CARGO_BUILD_TARGET_DIR=$outdir cargo build --release
     else
-       echo "\nERR: did you forget to --out-dir=/some/path ??\n"
+       echo "\nERR: did you forget to --output-dir=/some/path ??\n"
        Usage
        return 1
     fi
