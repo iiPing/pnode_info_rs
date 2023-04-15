@@ -1,10 +1,6 @@
 name: Rust build
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on:
-  push:
-    branches: [ $default-branch ]
-  pull_request:
-    branches: [ $default-branch ]
+on: [push]
 env:
   CARGO_TERM_COLOR: always
   GHPUSH: ${{ secrets.GHPUSH }}
