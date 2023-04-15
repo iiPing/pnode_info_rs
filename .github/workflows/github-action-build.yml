@@ -1,0 +1,21 @@
+name: Build
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: running build
+        run: |
+          cd ${{ github.workspace }}
+          mkdir distbin
+          ./build bin-release --output-dir=$(pwd)/distbin
+

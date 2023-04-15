@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 
 PROJECT_NAME=pnode_info_rs
-
-GH_TAG=v0.2
-
-TGT_X64="x86_64-unknown-linux-gnu"
-TGT_A64="aarch64-unknown-linux-gnu"
+GH_TAG=v0.3-rc1
 
 set -euo pipefail
 
@@ -26,22 +22,31 @@ EOF
 function BinRelease {
     local param=$1
     local outdir=$(echo $param | perl -ne 'print $1 if /--output-dir=(\S+)/')
+    local tgt_x64="x86_64-unknown-linux-gnu"
+    local tgt_a64="aarch64-unknown-linux-gnu"
+
     if [[ -n $outdir && -d "$outdir" ]]; then
-      
+      local builder_os="$(uname -a | perl -ne 'if ( $_ =~ /x86_64/ ) { print "x86_64"; } elsif ( $_ =~ /aarch64/ ){ print "aarch64" }  else { print "unidentifed" }')"
+      export RUSTFLAGS="-C target-feature=+crt-static"
+      export CARGO_BUILD_TARGET_DIR=$outdir
+
       #https://github.com/rust-lang/rust/issues/78210
-      check_add_x86flag="$(uname -a | perl -ne 'print "--target x86_64-unknown-linux-gnu" if /x86_64/')"
-      check_add_aarch64flag="$(uname -a | perl -ne 'print "--target aarch64-unknown-linux-gnu" if /aarch64/' )"
+      case "$builder_os" in
 
-      RUSTFLAGS="-C target-feature=+crt-static" \
-            CARGO_BUILD_TARGET_DIR=$outdir cargo build --release $check_add_x86flag $check_add_aarch64flag
+        x86_64)
+          cargo build --release --target $tgt_x64
+          cp $outdir/$tgt_x64/release/$PROJECT_NAME $outdir/$PROJECT_NAME
+          ;;
 
-      if [[ -n "$check_add_x86flag" && -f "$outdir/$TGT_X64/release/$PROJECT_NAME" ]]; then
-        cp $outdir/$TGT_X64/release/$PROJECT_NAME $outdir/$PROJECT_NAME
-      fi
+        aarch64)
+          cargo build --release --target $tgt_a64
+          cp $outdir/$tgt_a64/release/$PROJECT_NAME $outdir/$PROJECT_NAME
+          ;;
 
-      if [[ -n "$check_add_aarch64flag" && -f "$outdir/$TGT_A64/release/$PROJECT_NAME" ]]; then
-        cp $outdir/$TGT_A64/release/$PROJECT_NAME $outdir/$PROJECT_NAME
-      fi
+        *)
+          cargo build --release
+          ;;
+      esac
 
     else
        echo "\nERR: did you forget to --output-dir=/some/path ??\n"
@@ -51,7 +56,7 @@ function BinRelease {
 }
 
 function DockerRelease {
-    set -x 
+
     local param=$1
     local version=$(echo $param | perl -ne 'print $1 if /--version=(\S+)/')
     if [[ -n "$version" ]]; then
