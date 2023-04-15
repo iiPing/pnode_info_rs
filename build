@@ -2,6 +2,8 @@
 
 PROJECT_NAME=pnode_info_rs
 
+GH_TAG=v0.1-rc2
+
 TGT_X64="x86_64-unknown-linux-gnu"
 TGT_A64="aarch64-unknown-linux-gnu"
 
@@ -49,7 +51,7 @@ function BinRelease {
 }
 
 function DockerRelease {
-    set -x
+    set -x 
     local param=$1
     local version=$(echo $param | perl -ne 'print $1 if /--version=(\S+)/')
     if [[ -n "$version" ]]; then
@@ -112,5 +114,7 @@ if [[ "$action" == "bin-release" ]]; then
   BinRelease $params
 elif [[ "$action" == "docker-release" ]]; then
   DockerRelease $params
+elif [[ "$action" == "docker-release-ghaction" ]]; then
+  DockerRelease --version=$GH_TAG
 fi
 

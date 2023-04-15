@@ -3,7 +3,6 @@ run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
 env:
   CARGO_TERM_COLOR: always
-  GHPUSH: ${{ secrets.GHPUSH }}
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,7 +18,7 @@ jobs:
         run: |
           ls ${{ github.workspace }}
           cd ${{ github.workspace }}
-          echo $GHPUSH
-          echo ${{ secrets.GHPUSH }}
+          echo ${{ secrets.GHPUSH }} | docker login --username iiping --password-stdin
+          ./build docker-release-ghaction
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
