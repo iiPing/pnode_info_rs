@@ -2,6 +2,9 @@
 
 PROJECT_NAME=pnode_info_rs
 
+TGT_X64="x86_64-unknown-linux-gnu"
+TGT_A64="aarch64-unknown-linux-gnu"
+
 set -euo pipefail
 
 function Usage
@@ -24,18 +27,18 @@ function BinRelease {
     if [[ -n $outdir && -d "$outdir" ]]; then
       
       #https://github.com/rust-lang/rust/issues/78210
-      check_add_x86flag="$(uname -a | perl -ne 'print "--target x86_64-unknown-linux-gnu" if /x86_64/')"
-      check_add_aarch64flag="$(uname -a | perl -ne 'print "--target aarch64-unknown-linux-gnu" if /aarch64/' )"
+      check_add_x86flag="$(uname -a | perl -ne 'print "--target $TGT_X64" if /x86_64/')"
+      check_add_aarch64flag="$(uname -a | perl -ne 'print "--target $TGT_A64" if /aarch64/' )"
 
       RUSTFLAGS="-C target-feature=+crt-static" \
             CARGO_BUILD_TARGET_DIR=$outdir cargo build --release $check_add_x86flag $check_add_aarch64flag
 
-      if [[ -n "$check_add_x86flag" && -f "$outdir/x86_64-unknown-linux-gnu/release/pnode_info_rs" ]]; then
-        cp $outdir/x86_64-unknown-linux-gnu/release/pnode_info_rs $outdir/pnode_info_rs
+      if [[ -n "$check_add_x86flag" && -f "$outdir/$TGT_X64/release/$PROJECT_NAME" ]]; then
+        cp $outdir/$TGT_X64/release/$PROJECT_NAME $outdir/$PROJECT_NAME
       fi
 
-      if [[ -n "$check_add_aarch64flag" && -f "$outdir/aarch64-unknown-linux-gnu/release/pnode_info_rs" ]]; then
-        cp $outdir/aarch64-unknown-linux-gnu/release/pnode_info_rs $outdir/pnode_info_rs
+      if [[ -n "$check_add_aarch64flag" && -f "$outdir/$TGT_A64/release/$PROJECT_NAME" ]]; then
+        cp $outdir/$TGT_A64/release/$PROJECT_NAME $outdir/$PROJECT_NAME
       fi
 
     else
@@ -64,8 +67,8 @@ function DockerRelease {
 
         export VERSION=$version
         docker buildx build --build-arg VERSION=${VERSION} \
-            --platform linux/amd64,linux/arm64,linux/arm/v7 \
-            --push -t iiping/pnode_info_rs:${VERSION} .
+            --platform linux/amd64,linux/arm64 \
+            --push -t iiping/$PROJECT_NAME:${VERSION} .
     
     else
       echo "did you forget to add --version=some-version ??"
