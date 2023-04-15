@@ -29,7 +29,10 @@ function BinRelease {
       RUSTFLAGS="-C target-feature=+crt-static" \
             CARGO_BUILD_TARGET_DIR=$outdir cargo build --release $check_add_x86flag
 
-      
+      if [[ -n "$check_add_x86flag" && -f "$outdir/x86_64-unknown-linux-gnu/release/pnode_info_rs" ]]; then
+        cp $outdir/x86_64-unknown-linux-gnu/release/pnode_info_rs $outdir/pnode_info_rs
+      fi
+
     else
        echo "\nERR: did you forget to --output-dir=/some/path ??\n"
        Usage
