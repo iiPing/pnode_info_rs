@@ -30,7 +30,7 @@ RUN ./build bin-release --output-dir=/usr/src/local/pnode_info_rs/distbin
 # https://github.com/GoogleContainerTools/distroless
 FROM gcr.io/distroless/cc-debian11:latest
 
-# Grab cadvisor from the staging directory.
+# Grab pnode_info_rs from the final_stage
 COPY --from=final_stage /usr/src/local/pnode_info_rs/distbin/pnode_info_rs /usr/local/bin/pnode_info_rs
 
 
