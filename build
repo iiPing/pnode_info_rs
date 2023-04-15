@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+
+PROJECT_NAME=pnode_info_rs
+
+GH_TAG=v0.1-rc3
+
+TGT_X64="x86_64-unknown-linux-gnu"
+TGT_A64="aarch64-unknown-linux-gnu"
+
+set -euo pipefail
+
+function Usage
+{
+    cat <<EOF
+Usage: 
+
+  #Builds a statically linked binary locally to a specific folder
+  ${BASH_SOURCE[0]} bin-release --output-dir=\$(pwd)/distbin
+
+  #Builds the project in a docker container and push it
+  ${BASH_SOURCE[0]} docker-release --version
+
+EOF
+}
+
+function BinRelease {
+    local param=$1
+    local outdir=$(echo $param | perl -ne 'print $1 if /--output-dir=(\S+)/')
+    if [[ -n $outdir && -d "$outdir" ]]; then
+      
+      #https://github.com/rust-lang/rust/issues/78210
+      check_add_x86flag="$(uname -a | perl -ne 'print "--target x86_64-unknown-linux-gnu" if /x86_64/')"
+      check_add_aarch64flag="$(uname -a | perl -ne 'print "--target aarch64-unknown-linux-gnu" if /aarch64/' )"
+
+      RUSTFLAGS="-C target-feature=+crt-static" \
+            CARGO_BUILD_TARGET_DIR=$outdir cargo build --release $check_add_x86flag $check_add_aarch64flag
+
+      if [[ -n "$check_add_x86flag" && -f "$outdir/$TGT_X64/release/$PROJECT_NAME" ]]; then
+        cp $outdir/$TGT_X64/release/$PROJECT_NAME $outdir/$PROJECT_NAME
+      fi
+
+      if [[ -n "$check_add_aarch64flag" && -f "$outdir/$TGT_A64/release/$PROJECT_NAME" ]]; then
+        cp $outdir/$TGT_A64/release/$PROJECT_NAME $outdir/$PROJECT_NAME
+      fi
+
+    else
+       echo "\nERR: did you forget to --output-dir=/some/path ??\n"
+       Usage
+       return 1
+    fi
+}
+
+function DockerRelease {
+    set -x 
+    local param=$1
+    local version=$(echo $param | perl -ne 'print $1 if /--version=(\S+)/')
+    if [[ -n "$version" ]]; then
+
+        git fetch
+        git checkout $version
+        mkdir -p distbin
+        
+        local builder_name=crossbuilderx
+        local has_crossbuilderx="$(docker buildx ls | perl -ne 'print $1 if /^(${builder_name})/; ')"
+        if [[ -z "$has_crossbuilderx" ]]; then
+            docker buildx create --name ${builder_name}
+        fi
+        docker buildx use ${builder_name}
+
+        export VERSION=$version
+        docker buildx build --build-arg VERSION=${VERSION} \
+            --platform linux/amd64,linux/arm64 \
+            --push -t iiping/$PROJECT_NAME:${VERSION} .
+    
+    else
+      echo "did you forget to add --version=some-version ??"
+      Usage
+      return 1
+    fi
+
+}
+
+function GetScriptDIR() {
+    local src="${BASH_SOURCE[0]}"
+    local ldir=""
+    while [ -h "$src" ]; do
+        ldir="$(dirname "$(realpath "$src")")"
+        src="$(readlink "$src")"
+        [[ $src != /* ]] && src="$ldir/$src"
+    done
+    ldir="$( cd -P "$( dirname "$src" )" >/dev/null 2>&1 && pwd )"
+    echo "$ldir"
+}
+
+
+###### main
+
+
+if [[ $# -le 1 ]]; then
+  Usage
+  exit 1
+fi
+
+cd "$(GetScriptDIR)"
+
+action=$1
+shift
+params=$@
+
+
+
+
+if [[ "$action" == "bin-release" ]]; then
+  BinRelease $params
+elif [[ "$action" == "docker-release" ]]; then
+  DockerRelease $params
+elif [[ "$action" == "docker-release-ghaction" ]]; then
+  DockerRelease --version=$GH_TAG
+fi
+

@@ -15,3 +15,8 @@ lazy_static = "1.4.0"
 prometheus = { version = "0.13.3" }
 tokio = { version = "1.27", features = ["rt", "macros", "rt-multi-thread", "io-util"]}
 humantime = "2.1.0"
+
+
+[profile.release]
+strip = true  # Automatically strip symbols from the binary.
+
