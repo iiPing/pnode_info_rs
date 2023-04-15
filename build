@@ -19,6 +19,7 @@ EOF
 }
 
 function BinRelease {
+    set -x
     local param=$1
     local outdir=$(echo $param | perl -ne 'print $1 if /--output-dir=(\S+)/')
     if [[ -n $outdir && -d "$outdir" ]]; then
@@ -32,15 +33,10 @@ function BinRelease {
 }
 
 function DockerRelease {
+    
     local param=$1
     local version=$(echo $param | perl -ne 'print $1 if /--version=(\S+)/')
-    if [[ "$param" =~ --version= ]]; then
-        
-
-        if [[ -z "$version" ]]; then
-            Usage
-            return 1
-        fi
+    if [[ -n "$version" ]]; then
 
         git fetch
         git checkout $version
