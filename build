@@ -24,13 +24,18 @@ function BinRelease {
     if [[ -n $outdir && -d "$outdir" ]]; then
       
       #https://github.com/rust-lang/rust/issues/78210
-      check_add_x86flag=$(uname -a | perl -ne 'print "--target x86_64-unknown-linux-gnu" if /x86_64/')
+      check_add_x86flag="$(uname -a | perl -ne 'print "--target x86_64-unknown-linux-gnu" if /x86_64/')"
+      check_add_aarch64flag="$(uname -a | perl -ne 'print "--target aarch64-unknown-linux-gnu" if /aarch64/' )"
 
       RUSTFLAGS="-C target-feature=+crt-static" \
-            CARGO_BUILD_TARGET_DIR=$outdir cargo build --release $check_add_x86flag
+            CARGO_BUILD_TARGET_DIR=$outdir cargo build --release $check_add_x86flag $check_add_aarch64flag
 
       if [[ -n "$check_add_x86flag" && -f "$outdir/x86_64-unknown-linux-gnu/release/pnode_info_rs" ]]; then
         cp $outdir/x86_64-unknown-linux-gnu/release/pnode_info_rs $outdir/pnode_info_rs
+      fi
+
+      if [[ -n "$check_add_aarch64flag" && -f "$outdir/aarch64-unknown-linux-gnu/release/pnode_info_rs" ]]; then
+        cp $outdir/aarch64-unknown-linux-gnu/release/pnode_info_rs $outdir/pnode_info_rs
       fi
 
     else
