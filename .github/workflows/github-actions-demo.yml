@@ -19,6 +19,6 @@ jobs:
           ls ${{ github.workspace }}
           cd ${{ github.workspace }}
           echo ${{ secrets.GHPUSH }} | docker login --username iiping --password-stdin
-          ./build docker-release-ghaction
+          ./build docker-release-ghaction dummy
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
