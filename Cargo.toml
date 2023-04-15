@@ -1,0 +1,17 @@
+[package]
+name = "pnode_info_rs"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+io_driver = ["tokio/net"]
+
+[dependencies]
+axum = "0.6.12"
+futures = "0.3.28"
+lazy_static = "1.4.0"
+prometheus = { version = "0.13.3" }
+tokio = { version = "1.27", features = ["rt", "macros", "rt-multi-thread", "io-util"]}
+humantime = "2.1.0"
