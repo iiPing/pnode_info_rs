@@ -41,7 +41,7 @@ function BinRelease {
 }
 
 function DockerRelease {
-    
+    set -x
     local param=$1
     local version=$(echo $param | perl -ne 'print $1 if /--version=(\S+)/')
     if [[ -n "$version" ]]; then
